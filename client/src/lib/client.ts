@@ -4,11 +4,21 @@ import { readable } from "svelte/store";
 let ws: WebSocket;
 
 export const socket = readable<WebSocket | null>(null, (set) => {
-	ws = new WebSocket("ws://localhost:3000");
+	if (import.meta.hot) {
+		if (!import.meta.hot.data.wsocket) {
+			ws = new WebSocket("ws://localhost:3000");
+			import.meta.hot.data.wsocket = ws;
+		} else {
+			ws = import.meta.hot.data.wsocket;
+		}
+	} else if (!ws) {
+		ws = new WebSocket("ws://localhost:3000");
+
+	}
 	ws.addEventListener("open", () => {
 		set(ws);
 	});
-	
+
 	return () => {
 		ws.close();
 	};
@@ -19,11 +29,11 @@ function sendMessage(type: messageType, message?: string) {
 }
 
 export enum messageType {
-	test = "test",
-	joinRandomRoom = "joinRandomRoom",
-	joinRoomCode = "joinRoom",
-	leaveRoom = "leaveRoom",
-	createRoom = "createRoom"
+	test,
+	joinRandomRoom,
+	joinRoomCode,
+	leaveRoom,
+	createRoom
 }
 
 export function joinRandomRoom() {
