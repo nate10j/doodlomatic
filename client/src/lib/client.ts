@@ -4,6 +4,8 @@ import { readable } from "svelte/store";
 let ws: WebSocket;
 
 export const socket = readable<WebSocket | null>(null, (set) => {
+	// creates a new websocket in dev mode so it doesn't interfere
+	// prevents development bugs
 	if (import.meta.hot) {
 		if (!import.meta.hot.data.wsocket) {
 			ws = new WebSocket("ws://localhost:3000");
@@ -15,6 +17,7 @@ export const socket = readable<WebSocket | null>(null, (set) => {
 		ws = new WebSocket("ws://localhost:3000");
 
 	}
+
 	ws.addEventListener("open", () => {
 		set(ws);
 	});
