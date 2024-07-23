@@ -15,16 +15,13 @@ export const socket = readable<WebSocket | null>(null, (set) => {
 		}
 	} else if (!ws) {
 		ws = new WebSocket("ws://localhost:3000");
-
 	}
 
 	ws.addEventListener("open", () => {
 		set(ws);
 	});
 
-	return () => {
-		ws.close();
-	};
+	return () => {};
 });
 
 function sendMessage(type: messageType, message?: string) {

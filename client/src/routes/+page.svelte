@@ -7,13 +7,12 @@
 
 	let username: string;
 	let roomCodeInput: string;
-
 	$: if ($socket != undefined) {
 		console.log("socket loaded");
 
 		$socket.send(JSON.stringify({ type: "test", message: "hello world!" }));
 
-		$socket.addEventListener("message", (event) => {
+		$socket.addEventListener("message", (event: any) => {
 			console.log(event.data);
 		});
 	}

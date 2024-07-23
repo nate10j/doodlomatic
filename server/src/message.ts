@@ -1,4 +1,6 @@
-import type { ServerWebSocket } from "bun";
+import type { serve, ServerWebSocket } from "bun";
+import type { player } from "./player";
+import { createPrivateRoom, joinRoomCode, joinRandomRoom } from "./rooms";
 
 // for sake of convenience and performance since using an enum
 // will default go to 1s and 2s and 3s so they dont have to send strings
@@ -10,10 +12,11 @@ export enum messageType {
 	joinRandomRoom,
 	joinRoomCode,
 	leaveRoom,
-	createRoom
+	createRoom,
+	roomCodeDoesNotExist,
 }
 
-export function handleMessages(ws: ServerWebSocket<unknown>, message: string | Buffer) {
+export function handleMessages(server: any, ws: ServerWebSocket<unknown>, message: string | Buffer) {
 	const data = JSON.parse(message.toString());
 	switch (data.type) {
 		case messageType.test:
@@ -21,10 +24,10 @@ export function handleMessages(ws: ServerWebSocket<unknown>, message: string | B
 			ws.send("Hi")
 			break;
 		case messageType.joinRoomCode:
-			console.log("Joining room: " + data.message);
+			joinRoomCode(data.message.roomCode, { ws, name: "test", profile: "test" } as player);
 			break;
 		case messageType.joinRandomRoom:
-			console.log("Joining random room");
+			joinRandomRoom({ ws, name: "test", profile: "test" } as player, server);
 			break;
 		case messageType.createRoom:
 			console.log("Creating room");

@@ -4,9 +4,24 @@ import "./rooms"
 
 type WebSocketData = {
 	roomCode: string;
+	sessionId: string;
 }
 
-Bun.serve({
+// in the future we use redis
+const sessionIds = new Set<string>();
+
+function generateSessionId() {
+	// generate a random session id of characters, numbers etc
+	// make sure when generting session id it dont generate duplicates
+	let sessionId: string;
+	do {
+		sessionId = Date.now().toString(36) + Math.random().toString(36).substring(2, 7);
+	} while (sessionIds.has(sessionId))
+	sessionIds.add(sessionId);
+	return sessionId;
+}
+
+const server = Bun.serve({
 	fetch(req, server) {
 		// upgrade the request to a WebSocket
 		if (server.upgrade(req)) {
@@ -16,7 +31,7 @@ Bun.serve({
 	},
 	websocket: {
 		message(ws, message) {
-			handleMessages(ws, message);
+			handleMessages(server, ws, message);
 		}
 	},
 	port: 3000,
