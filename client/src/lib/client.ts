@@ -6,27 +6,27 @@ let ws: WebSocket;
 export const socket = readable<WebSocket | null>(null, (set) => {
 	// creates a new websocket in dev mode so it doesn't interfere
 	// prevents development bugs
-	if (import.meta.hot) {
-		if (!import.meta.hot.data.wsocket) {
+
+	if (typeof WebSocket !== "undefined") {
+		if (import.meta.hot) {
+			if (!import.meta.hot.data.wsocket) {
+				ws = new WebSocket("ws://localhost:3000");
+				import.meta.hot.data.wsocket = ws;
+			} else {
+				ws = import.meta.hot.data.wsocket;
+			}
+		} else if (!ws) {
 			ws = new WebSocket("ws://localhost:3000");
-			import.meta.hot.data.wsocket = ws;
-		} else {
-			ws = import.meta.hot.data.wsocket;
 		}
-	} else if (!ws) {
-		ws = new WebSocket("ws://localhost:3000");
+
+		ws.addEventListener("open", () => {
+			set(ws);
+		});
 	}
 
-	ws.addEventListener("open", () => {
-		set(ws);
-	});
-
-	return () => {};
+	return () => { };
 });
 
-function sendMessage(type: messageType, message?: string) {
-	ws.send(JSON.stringify({ type, message }));
-}
 
 export enum messageType {
 	test,
@@ -37,13 +37,13 @@ export enum messageType {
 }
 
 export function joinRandomRoom() {
-	sendMessage(messageType.joinRandomRoom);
+	ws.send(JSON.stringify({ type: messageType.joinRandomRoom }));
 }
 
 export function joinRoomCode(roomCode: string) {
-	sendMessage(messageType.joinRoomCode, roomCode);
+	ws.send(JSON.stringify({ type: messageType.joinRoomCode, roomCode }));
 }
 
 export function createRoom() {
-	sendMessage(messageType.createRoom);
+	ws.send(JSON.stringify({ type: messageType.createRoom }));
 }

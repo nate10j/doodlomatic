@@ -7,6 +7,7 @@
 
 	let username: string;
 	let roomCodeInput: string;
+	
 	$: if ($socket != undefined) {
 		console.log("socket loaded");
 
