@@ -1,31 +1,33 @@
 // have a websocket between svelte pages using svelte stores
 import { readable } from "svelte/store";
+import { writable } from 'svelte/store';
 
-let ws: WebSocket;
-
-export const socket = readable<WebSocket | null>(null, (set) => {
-	if (typeof WebSocket !== "undefined") {
-		// creates a new websocket in dev mode so it doesn't interfere
-		// prevents development bugs
-		if (import.meta.hot) {
-			if (!import.meta.hot.data.wsocket) {
-				ws = new WebSocket("ws://localhost:3000");
-				import.meta.hot.data.wsocket = ws;
-			} else {
-				ws = import.meta.hot.data.wsocket;
-			}
-		} else if (!ws) {
-			ws = new WebSocket("ws://localhost:3000");
-		}
-
-		ws.addEventListener("open", () => {
-			set(ws);
-		});
-	}
-
-	return () => { };
+export const roomData = writable({
+	roomCode: "",
+	players: []
 });
 
+let socket: WebSocket;
+
+export const socketStore = readable<MessageEvent | null>(null, (set) => {
+	// prevents development bugs of multiple websockets
+	if (import.meta.hot) {
+		if (!import.meta.hot.data.wsocket) {
+			socket = new WebSocket("ws://localhost:3000");
+			import.meta.hot.data.wsocket = socket;
+		} else {
+			socket = import.meta.hot.data.wsocket;
+		}
+	} else if (!socket) {
+		socket = new WebSocket("ws://localhost:3000");
+	}
+
+	socket.addEventListener("message", function (event) {
+		set(event);
+	});
+
+	return () => { socket.close(); };
+});
 
 export enum messageType {
 	test,
@@ -36,13 +38,13 @@ export enum messageType {
 }
 
 export function joinRandomRoom() {
-	ws.send(JSON.stringify({ type: messageType.joinRandomRoom }));
+	socket?.send(JSON.stringify({ type: messageType.joinRandomRoom }));
 }
 
 export function joinRoomCode(roomCode: string) {
-	ws.send(JSON.stringify({ type: messageType.joinRoomCode, roomCode }));
+	socket?.send(JSON.stringify({ type: messageType.joinRoomCode, roomCode }));
 }
 
 export function createRoom() {
-	ws.send(JSON.stringify({ type: messageType.createRoom }));
+	socket?.send(JSON.stringify({ type: messageType.createRoom }));
 }

@@ -41,7 +41,7 @@ export function joinRandomRoom(player: player, server: any) {
   const randomRoomCode = roomCodes[Math.floor(Math.random() * roomCodes.length)];
   joinRoom(randomRoomCode, player);
 
-  server.publish(randomRoomCode, JSON.stringify(`Room Code: ${randomRoomCode}`));
+  server.publish(randomRoomCode, JSON.stringify({type: messageType.joinRandomRoom, roomCode: randomRoomCode}));
 }
 
 export function joinRoomCode(roomCode: string, player: player) {

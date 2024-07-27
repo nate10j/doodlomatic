@@ -1,28 +1,29 @@
 <script lang="ts">
 	import { onMount } from "svelte";
-	import { socket } from "$lib/client";
-
+	import { socketStore } from "$lib/client";
+	import { messageType } from "$lib/client";
 	import { generateRandomUsername } from "$lib/username";
 	import { joinRandomRoom, joinRoomCode, createRoom } from "$lib/client";
+    import { goto } from "$app/navigation";
 
 	let username: string;
 	let roomCodeInput: string;
 	
-	$: if ($socket != undefined) {
-		console.log("socket loaded");
+	$: if ($socketStore !== null) {
+		console.log("socket recieved message", $socketStore.data);
 
-		$socket.send(JSON.stringify({ type: "test", message: "hello world!" }));
+		const data = JSON.parse($socketStore.data);
 
-		$socket.addEventListener("message", (event: any) => {
-			console.log(event.data);
-		});
+		switch (data.type) {
+			case messageType.joinRandomRoom:
+				goto("/play")
+				// go to the join random room page
+				break;
+		}
 	}
 
-	// runs when page is loaded
-	// fixes problem where random username is generated twice
-	onMount(() => {
-		username = generateRandomUsername();
-	});
+	username = generateRandomUsername();
+
 
 	function joinRandomRoomEvent() {
 		joinRandomRoom();
