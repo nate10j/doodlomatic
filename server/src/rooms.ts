@@ -1,53 +1,56 @@
-import type { ServerWebSocket } from "bun";
+import type { Serve, ServerWebSocket } from "bun";
 import type { player } from "./player";
 import { messageType } from "./message";
-import type { server } from "typescript";
+import type { WebSocketData } from "./index";
 
 type room = {
-  players: player[];
+  players: Map<string, player>;
 };
 
 const rooms = new Map<string, room>();
 
 // generates new room code
 // make sure not to make any room code duplicates
-function generateRoomCode() {
+function generateRoom() {
   let roomCode: string;
   do {
     roomCode = Math.random().toString(36).substring(2, 7);
   } while (rooms.has(roomCode))
-  rooms.set(roomCode, { players: [] });
+  rooms.set(roomCode, { players: new Map() });
   return roomCode;
 }
 
-function joinRoom(roomCode: string, player: player) {
+function joinRoom(ws: ServerWebSocket<WebSocketData>, roomCode: string, player: player) {
   const room = rooms.get(roomCode);
   if (room) {
-    room.players.push(player);
-    player.ws.subscribe(roomCode);
+    room.players.set(ws.data.sessionId, player);
+    ws.subscribe(roomCode);
   }
 }
 
-export function joinRandomRoom(player: player, server: any) {
+export function joinRandomRoom(ws: ServerWebSocket<WebSocketData>, server: ServerWebSocket<WebSocketData>, player: player) {
+  // if there are no rooms, create a new room and join it
   if (rooms.size === 0) {
-    const roomCode = generateRoomCode();
-    rooms.set(roomCode, { players: [] });
-    joinRoom(roomCode, player);
-    server.publish(roomCode, JSON.stringify(`Room Code: ${roomCode}`));
+    const roomCode = generateRoom();
+    joinRoom(ws, roomCode, player);
+    ws.send(JSON.stringify({
+      type: messageType.joinRandomRoom,
+      roomCode,
+    }));
 
     return;
   }
   const roomCodes = Array.from(rooms.keys());
   const randomRoomCode = roomCodes[Math.floor(Math.random() * roomCodes.length)];
-  joinRoom(randomRoomCode, player);
+  joinRoom(ws, randomRoomCode, player);
 
   server.publish(randomRoomCode, JSON.stringify({type: messageType.joinRandomRoom, roomCode: randomRoomCode}));
 }
 
-export function joinRoomCode(roomCode: string, player: player) {
+export function joinRoomCode(ws: ServerWebSocket<WebSocketData>, roomCode: string, player: player) {
   const room = rooms.get(roomCode);
   if (!room) {
-    player.ws.send(JSON.stringify({
+    ws.send(JSON.stringify({
       type: messageType.roomCodeDoesNotExist,
     }));
     return null;
@@ -55,9 +58,9 @@ export function joinRoomCode(roomCode: string, player: player) {
 }
 
 export function createPrivateRoom() {
-  const roomCode = generateRoomCode();
-  const newRoom = {
-    players: []
+  const roomCode = generateRoom();
+  const newRoom: room = {
+    players: new Map(),
   }
   rooms.set(roomCode, newRoom);
   return roomCode;

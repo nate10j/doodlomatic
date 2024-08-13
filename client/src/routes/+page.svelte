@@ -1,29 +1,21 @@
 <script lang="ts">
 	import { onMount } from "svelte";
-	import { socketStore } from "$lib/client";
+	import { socketStore, playerData } from "$lib/client";
 	import { messageType } from "$lib/client";
 	import { generateRandomUsername } from "$lib/username";
 	import { joinRandomRoom, joinRoomCode, createRoom } from "$lib/client";
-    import { goto } from "$app/navigation";
+	import { goto } from "$app/navigation";
 
-	let username: string;
 	let roomCodeInput: string;
-	
+
 	$: if ($socketStore !== null) {
-		console.log("socket recieved message", $socketStore.data);
-
-		const data = JSON.parse($socketStore.data);
-
-		switch (data.type) {
-			case messageType.joinRandomRoom:
-				goto("/play")
-				// go to the join random room page
-				break;
-		}
+		console.log("message recieved")
 	}
 
-	username = generateRandomUsername();
-
+	playerData.set({
+		username: generateRandomUsername(),
+		profilePicture: "",
+	})
 
 	function joinRandomRoomEvent() {
 		joinRandomRoom();
@@ -40,34 +32,40 @@
 	<h1>Doodlomatic</h1>
 </div>
 
-<div class="content">
+<div id="content">
 	<form class="play-form" on:submit={joinRandomRoomEvent}>
 		<input
-			class="username"
+			id="username"
 			type="text"
-			bind:value={username}
+			bind:value={$playerData.username}
 			placeholder="enter player name"
 		/>
-		<button class="play random" type="submit">Play</button>
+		<button id="random" class="play" type="submit">Play</button>
 		<p>Or</p>
 		<input
-			class="code"
+			id="code"
 			type="text"
 			placeholder="enter room code"
 			bind:value={roomCodeInput}
 		/>
-		<button class="play withcode" type="button" on:click={joinRoomCodeEvent}
-			>Play with code</button
+		<button
+			id="withcode"
+			class="play"
+			type="button"
+			on:click={joinRoomCodeEvent}>Play with code</button
 		>
 		<p>Or</p>
-		<button class="play createroom" type="button" on:click={createRoomEvent}
-			>Create private room</button
+		<button
+			id="createroom"
+			class="play"
+			type="button"
+			on:click={createRoomEvent}>Create private room</button
 		>
 	</form>
 </div>
 
 <style>
-	.content {
+	#content {
 		width: 100%;
 		display: flex;
 		justify-content: center;

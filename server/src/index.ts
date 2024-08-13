@@ -1,8 +1,9 @@
 import type { WebSocketHandler } from "bun";
 import { handleMessages } from "./message";
+import "cookie";
 import "./rooms"
 
-type WebSocketData = {
+export type WebSocketData = {
 	roomCode: string;
 	sessionId: string;
 }
@@ -21,17 +22,26 @@ function generateSessionId() {
 	return sessionId;
 }
 
-const server = Bun.serve({
+const server = Bun.serve<WebSocketData>({
 	fetch(req, server) {
 		// upgrade the request to a WebSocket
-		if (server.upgrade(req)) {
-			return; // do not return a Response
-		}
+		server.upgrade(req, {
+			data: {
+				roomCode: "",
+				sessionId: generateSessionId()
+			}
+		})
 		return new Response("Upgrade failed", { status: 500 });
 	},
 	websocket: {
+		open(ws) {
+			// nothing rn
+		},
 		message(ws, message) {
 			handleMessages(server, ws, message);
+		},
+		close(ws) {
+			sessionIds.delete(ws.data.sessionId);
 		}
 	},
 	port: 3000,

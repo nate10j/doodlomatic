@@ -1,5 +1,5 @@
-import type { serve, ServerWebSocket } from "bun";
-import type { player } from "./player";
+import type { ServerWebSocket } from "bun";
+import type { WebSocketData } from "./index";
 import { createPrivateRoom, joinRoomCode, joinRandomRoom } from "./rooms";
 
 // for sake of convenience and performance since using an enum
@@ -16,7 +16,7 @@ export enum messageType {
 	roomCodeDoesNotExist,
 }
 
-export function handleMessages(server: any, ws: ServerWebSocket<unknown>, message: string | Buffer) {
+export function handleMessages(server: any, ws: ServerWebSocket<WebSocketData>, message: string | Buffer) {
 	const data = JSON.parse(message.toString());
 	switch (data.type) {
 		case messageType.test:
@@ -24,10 +24,10 @@ export function handleMessages(server: any, ws: ServerWebSocket<unknown>, messag
 			ws.send("Hi")
 			break;
 		case messageType.joinRoomCode:
-			joinRoomCode(data.message.roomCode, { ws, name: "test", profile: "test" } as player);
+			joinRoomCode(ws, data.message.roomCode, data.player);
 			break;
 		case messageType.joinRandomRoom:
-			joinRandomRoom({ ws, name: "test", profile: "test" } as player, server);
+			joinRandomRoom(ws, server, data.player);
 			break;
 		case messageType.createRoom:
 			console.log("Creating room");
