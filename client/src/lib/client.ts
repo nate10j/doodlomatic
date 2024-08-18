@@ -7,10 +7,19 @@ export const playerData = writable({
 	profilePicture: "",
 });
 
-export const roomData = writable({
+export const roomData = writable<room>({
 	roomCode: "",
-	players: []
+	players: [],
 });
+
+type room = {
+	roomCode: string;
+	players: player[];
+}
+
+type player = {
+	username: string;
+}
 
 let socket: WebSocket;
 

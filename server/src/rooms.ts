@@ -33,6 +33,7 @@ export function joinRandomRoom(ws: ServerWebSocket<WebSocketData>, server: Serve
   if (rooms.size === 0) {
     const roomCode = generateRoom();
     joinRoom(ws, roomCode, player);
+    // send the room code to the client
     ws.send(JSON.stringify({
       type: messageType.joinRandomRoom,
       roomCode,
@@ -44,7 +45,11 @@ export function joinRandomRoom(ws: ServerWebSocket<WebSocketData>, server: Serve
   const randomRoomCode = roomCodes[Math.floor(Math.random() * roomCodes.length)];
   joinRoom(ws, randomRoomCode, player);
 
-  server.publish(randomRoomCode, JSON.stringify({type: messageType.joinRandomRoom, roomCode: randomRoomCode}));
+  // send the room code to the client
+  ws.send(JSON.stringify({
+    type: messageType.joinRandomRoom,
+    roomCode: randomRoomCode,
+  }));
 }
 
 export function joinRoomCode(ws: ServerWebSocket<WebSocketData>, roomCode: string, player: player) {

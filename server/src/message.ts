@@ -14,6 +14,7 @@ export enum messageType {
 	leaveRoom,
 	createRoom,
 	roomCodeDoesNotExist,
+	newPlayerJoinedRoom,
 }
 
 export function handleMessages(server: any, ws: ServerWebSocket<WebSocketData>, message: string | Buffer) {
