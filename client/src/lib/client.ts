@@ -69,7 +69,9 @@ export enum messageType {
 	joinRandomRoom,
 	joinRoomCode,
 	leaveRoom,
-	createRoom
+	createRoom,
+	roomCodeDoesNotExist,
+	newPlayerJoinedRoom,
 }
 
 export function joinRandomRoom() {
