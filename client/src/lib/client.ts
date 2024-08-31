@@ -1,10 +1,9 @@
 // have a websocket between svelte pages using svelte stores
 import { goto } from "$app/navigation";
-import { readable, writable } from "svelte/store";
+import { readable, writable, get } from "svelte/store";
 
-export const playerData = writable({
-	username: "",
-	profilePicture: "",
+export const playerData = writable<player>({
+	username: ""
 });
 
 export const roomData = writable<room>({
@@ -42,10 +41,12 @@ export const socketStore = readable<MessageEvent | null>(null, (set) => {
 			case messageType.test:
 				console.log("test");
 				break;
-
-			case messageType.joinRandomRoom:
-				console.log("joinRandomRoom");
+			case messageType.joinedRandomRoom:
 				roomData.set({ roomCode: data.roomCode, players: data.players });
+				goto("/play")
+				break;
+			case messageType.joinedRandomRoomCreated:
+				roomData.set({ roomCode: data.roomCode, players: [] });
 				goto("/play")
 				break;
 			case messageType.joinRoomCode:
@@ -72,10 +73,12 @@ export enum messageType {
 	createRoom,
 	roomCodeDoesNotExist,
 	newPlayerJoinedRoom,
+	joinedRandomRoom,
+	joinedRandomRoomCreated,
 }
 
 export function joinRandomRoom() {
-	socket?.send(JSON.stringify({ type: messageType.joinRandomRoom }));
+	socket?.send(JSON.stringify({ type: messageType.joinRandomRoom, player: get(playerData)}));
 }
 
 export function joinRoomCode(roomCode: string) {

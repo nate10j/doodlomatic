@@ -1,6 +1,6 @@
 import type { Serve, ServerWebSocket } from "bun";
 import type { player } from "./player";
-import { messageType } from "./message";
+import { messageType } from "./messageTypes";
 import type { WebSocketData } from "./index";
 
 type room = {
@@ -34,20 +34,21 @@ export function joinRandomRoom(ws: ServerWebSocket<WebSocketData>, server: Serve
     const roomCode = generateRoom();
     // send the room data to the client
     ws.send(JSON.stringify({
-      type: messageType.joinRandomRoom,
-      roomCode,
+      type: messageType.joinedRandomRoomCreated,
+      roomCode: roomCode,
     }));
     joinRoom(ws, roomCode, player);
     return;
   }
   const roomCodes = Array.from(rooms.keys());
   const randomRoomCode = roomCodes[Math.floor(Math.random() * roomCodes.length)];
-  // send the room data to the client
+  // send the room data to the client 
   ws.send(JSON.stringify({
-    type: messageType.joinRandomRoom,
+    type: messageType.joinedRandomRoom,
     roomCode: randomRoomCode,
-    players: Array.from(rooms.get(randomRoomCode)?.players.values() ?? []),
+    players: rooms.get(randomRoomCode)?.players
   }));
+  console.log(rooms.get(randomRoomCode)?.players);
   joinRoom(ws, randomRoomCode, player);
 
 }

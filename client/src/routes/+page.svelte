@@ -13,8 +13,7 @@
 	}
 
 	playerData.set({
-		username: generateRandomUsername(),
-		profilePicture: "",
+		username: generateRandomUsername()
 	})
 
 	function joinRandomRoomEvent() {

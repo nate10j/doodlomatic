@@ -13,11 +13,6 @@
 
 <div id="content">
 	<h1>Room: {$roomData.roomCode}</h1>
-	{#each $roomData.players as player}
-		<div>
-			<p>{player.username}</p>
-		</div>
-	{/each}
 	<div id="game-container">
 		<canvas id="game-canvas" width="600" height="600" />
 	</div>
